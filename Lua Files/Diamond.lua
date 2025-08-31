@@ -57,7 +57,7 @@ bc.CornerRadius=UDim.new(0,10)
 bc.Parent=b
 
 b.MouseButton1Click:Connect(function()
-setclipboard("https://discord.gg/rezexis")
+setclipboard("https://discord.gg/KFgBTpUnuH")
 b.Text="Copied!"
 t:Create(b,TweenInfo.new(0.3),{BackgroundColor3=Color3.fromRGB(40,200,40)}):Play()
 task.wait(1.5)
