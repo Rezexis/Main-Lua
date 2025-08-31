@@ -49,34 +49,6 @@ function MakeDraggable(topbarobject, object)
 		end;
 	end);
 end;
-local ScreenGui = Instance.new("ScreenGui");
-ScreenGui.Parent = game.CoreGui;
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-local OutlineButton = Instance.new("Frame");
-OutlineButton.Name = "OutlineButton";
-OutlineButton.Parent = ScreenGui;
-OutlineButton.ClipsDescendants = true;
-OutlineButton.BackgroundColor3 = _G.Dark;
-OutlineButton.BackgroundTransparency = 0;
-OutlineButton.Position = UDim2.new(0, 10, 0, 10);
-OutlineButton.Size = UDim2.new(0, 50, 0, 50);
-CreateRounded(OutlineButton, 12);
-local ImageButton = Instance.new("ImageButton");
-ImageButton.Parent = OutlineButton;
-ImageButton.Position = UDim2.new(0.5, 0, 0.5, 0);
-ImageButton.Size = UDim2.new(0, 40, 0, 40);
-ImageButton.AnchorPoint = Vector2.new(0.5, 0.5);
-ImageButton.BackgroundColor3 = _G.Dark;
-ImageButton.ImageColor3 = Color3.fromRGB(250, 250, 250);
-ImageButton.ImageTransparency = 0;
-ImageButton.BackgroundTransparency = 0;
-ImageButton.Image = "rbxassetid://13940080072";
-ImageButton.AutoButtonColor = false;
-MakeDraggable(ImageButton, OutlineButton);
-CreateRounded(ImageButton, 10);
-ImageButton.MouseButton1Click:connect(function()
-	(game.CoreGui:FindFirstChild("RezexisHub")).Enabled = not (game.CoreGui:FindFirstChild("RezexisHub")).Enabled;
-end);
 local NotificationFrame = Instance.new("ScreenGui");
 NotificationFrame.Name = "NotificationFrame";
 NotificationFrame.Parent = game.CoreGui;
@@ -215,7 +187,7 @@ function Update:StartLoad()
 	LoadingBarBackground.ZIndex = 2;
 	local LoadingBar = Instance.new("Frame");
 	LoadingBar.Parent = LoadingBarBackground;
-	LoadingBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0);
+	LoadingBar.BackgroundColor3 = Color3.fromRGB(0, 0, 255);
 	LoadingBar.Size = UDim2.new(0, 0, 1, 0);
 	LoadingBar.ZIndex = 3;
 	CreateRounded(LoadingBarBackground, 20);
@@ -557,7 +529,7 @@ function Update:Window(Config)
 			checked = not checked;
 			if checked then
 				Checkbox.ImageTransparency = 0;
-				Checkbox.BackgroundColor3 = Color3.fromRGB(255, 0, 0);
+				Checkbox.BackgroundColor3 = Color3.fromRGB(0, 0, 255);
 			else
 				Checkbox.ImageTransparency = 1;
 				Checkbox.BackgroundColor3 = Color3.fromRGB(100, 100, 100);
@@ -566,7 +538,7 @@ function Update:Window(Config)
 		end);
 		if checked then
 			Checkbox.ImageTransparency = 0;
-			Checkbox.BackgroundColor3 = Color3.fromRGB(255, 0, 0);
+			Checkbox.BackgroundColor3 = Color3.fromRGB(0, 0, 255);
 		else
 			Checkbox.ImageTransparency = 1;
 			Checkbox.BackgroundColor3 = Color3.fromRGB(100, 100, 100);
@@ -584,7 +556,7 @@ function Update:Window(Config)
 		local Button = Instance.new("TextButton");
 		Button.Name = "Button";
 		Button.Parent = Background;
-		Button.BackgroundColor3 = Color3.fromRGB(255, 0, 0);
+		Button.BackgroundColor3 = Color3.fromRGB(0, 0, 255);
 		Button.BackgroundTransparency = 0;
 		Button.Size = UDim2.new(0.8, 0, 0, 30);
 		Button.Font = Enum.Font.Code;
@@ -1553,7 +1525,7 @@ function Update:Window(Config)
 			Sep1.Size = UDim2.new(0, 20, 0, 36);
 			Sep1.Font = Enum.Font.GothamBold;
 			Sep1.RichText = true;
-			Sep1.Text = "âŒ©<font color=\"rgb(255, 0, 0)\">âŒ©</font>";
+			Sep1.Text = "<font color=\"rgb(0, 0, 255)\"></font>";
 			Sep1.TextColor3 = Color3.fromRGB(255, 255, 255);
 			Sep1.TextSize = 14;
 			Sep2.Name = "Sep2";
@@ -1576,7 +1548,7 @@ function Update:Window(Config)
 			Sep3.Size = UDim2.new(0, 20, 0, 36);
 			Sep3.Font = Enum.Font.GothamBold;
 			Sep3.RichText = true;
-			Sep3.Text = "<font color=\"rgb(255, 0, 0)\">âŒª</font>âŒª";
+			Sep3.Text = "<font color=\"rgb(0, 0, 255)\"></font>";
 			Sep3.TextColor3 = Color3.fromRGB(255, 255, 255);
 			Sep3.TextSize = 14;
 		end;
