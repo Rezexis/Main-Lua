@@ -2,6 +2,8 @@ local AllIDs = {}
 local actualHour = os.date("!*t").hour
 local S_T = game:GetService("TeleportService")
 local S_H = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 local File = pcall(function()
 	AllIDs = S_H:JSONDecode(readfile("server-hop-temp.json"))
@@ -20,9 +22,9 @@ local function TPReturner(placeId, region)
 	repeat
 		local Site
 		if foundAnything == "" then
-			Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&region=' .. region))
+			Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..placeId..'/servers/Public?sortOrder=Asc&limit=100&region='..region))
 		else
-			Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything .. '&region=' .. region))
+			Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/'..placeId..'/servers/Public?sortOrder=Asc&limit=100&cursor='..foundAnything..'&region='..region))
 		end
 
 		for i, v in pairs(Site.data) do
@@ -32,14 +34,17 @@ local function TPReturner(placeId, region)
 		end
 
 		foundAnything = Site.nextPageCursor
+		wait(0.05)
 	until not foundAnything or foundAnything == "null"
 
 	if #servers > 0 then
-		table.sort(servers, function(a, b)
-			return a.playing < b.playing
-		end)
+		table.sort(servers, function(a,b) return a.playing < b.playing end)
 
 		for _, v in pairs(servers) do
+			while LocalPlayer:IsTeleporting() do
+				wait(0.1)
+			end
+
 			local ID = tostring(v.id)
 			local Possible = true
 			for _, Existing in pairs(AllIDs) do
@@ -53,7 +58,7 @@ local function TPReturner(placeId, region)
 				table.insert(AllIDs, ID)
 				pcall(function()
 					writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
-					S_T:TeleportToPlaceInstance(placeId, ID, game.Players.LocalPlayer)
+					S_T:TeleportToPlaceInstance(placeId, ID, LocalPlayer)
 				end)
 				break
 			end
@@ -66,6 +71,7 @@ function module:Teleport(placeId, region)
 	while true do
 		pcall(function()
 			TPReturner(placeId, region)
+			wait(0.1)
 		end)
 	end
 end
