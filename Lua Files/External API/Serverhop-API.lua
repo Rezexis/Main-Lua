@@ -13,25 +13,26 @@ if not File then
 	pcall(function()
 		writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
 	end)
-
 end
+
 local function TPReturner(placeId, region)
-	local Site;
+	local Site
 	if foundAnything == "" then
 		Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&region=' .. region))
 	else
 		Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything .. '&region=' .. region))
 	end
-	local ID = ""
+	
 	if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
 		foundAnything = Site.nextPageCursor
 	end
-	local num = 0;
-	for i,v in pairs(Site.data) do
+
+	local num = 0
+	for i, v in pairs(Site.data) do
 		local Possible = true
-		ID = tostring(v.id)
-		if tonumber(v.maxPlayers) > tonumber(v.playing) then
-			for _,Existing in pairs(AllIDs) do
+		local ID = tostring(v.id)
+		if tonumber(v.playing) <= 3 then
+			for _, Existing in pairs(AllIDs) do
 				if num ~= 0 then
 					if ID == tostring(Existing) then
 						Possible = false
@@ -47,7 +48,8 @@ local function TPReturner(placeId, region)
 				end
 				num = num + 1
 			end
-			if Possible == true then
+
+			if Possible then
 				table.insert(AllIDs, ID)
 				wait()
 				pcall(function()
@@ -60,6 +62,7 @@ local function TPReturner(placeId, region)
 		end
 	end
 end
+
 local module = {}
 function module:Teleport(placeId, region)
 	while wait() do
@@ -71,4 +74,5 @@ function module:Teleport(placeId, region)
 		end)
 	end
 end
+
 return module
