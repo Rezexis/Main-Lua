@@ -26,38 +26,34 @@ local function TPReturner(placeId, region)
 		foundAnything = Site.nextPageCursor
 	end
 
-	local num = 0
+	local servers = {}
 	for i, v in pairs(Site.data) do
+		if tonumber(v.playing) < tonumber(v.maxPlayers) then
+			table.insert(servers, v)
+		end
+	end
+
+	table.sort(servers, function(a, b)
+		return a.playing < b.playing
+	end)
+
+	for _, v in pairs(servers) do
 		local Possible = true
 		local ID = tostring(v.id)
-
-		if tonumber(v.playing) == 1 and tonumber(v.maxPlayers) > 1 then
-			for _, Existing in pairs(AllIDs) do
-				if num ~= 0 then
-					if ID == tostring(Existing) then
-						Possible = false
-					end
-				else
-					if tonumber(actualHour) ~= tonumber(Existing) then
-						pcall(function()
-							delfile("server-hop-temp.json")
-							AllIDs = {}
-							table.insert(AllIDs, actualHour)
-						end)
-					end
-				end
-				num = num + 1
-			end
-
-			if Possible then
-				table.insert(AllIDs, ID)
-				pcall(function()
-					writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
-					S_T:TeleportToPlaceInstance(placeId, ID, game.Players.LocalPlayer)
-				end)
-				wait(4)
+		for _, Existing in pairs(AllIDs) do
+			if ID == tostring(Existing) then
+				Possible = false
 				break
 			end
+		end
+		if Possible then
+			table.insert(AllIDs, ID)
+			pcall(function()
+				writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
+				S_T:TeleportToPlaceInstance(placeId, ID, game.Players.LocalPlayer)
+			end)
+			wait(4)
+			break
 		end
 	end
 end
