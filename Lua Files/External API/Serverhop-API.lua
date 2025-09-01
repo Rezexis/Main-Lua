@@ -1,93 +1,74 @@
---// I do not own this script | Credits to original owner!
-local Config = {
-	MaxStore = 3600,
-	CheckInterval = 2500,
-	TeleportInterval = 1000,
-}
+local AllIDs = {}
+local foundAnything = ""
+local actualHour = os.date("!*t").hour
+local Deleted = false
+local S_T = game:GetService("TeleportService")
+local S_H = game:GetService("HttpService")
 
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
+local File = pcall(function()
+	AllIDs = S_H:JSONDecode(readfile("server-hop-temp.json"))
+end)
+if not File then
+	table.insert(AllIDs, actualHour)
+	pcall(function()
+		writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
+	end)
 
-if not Player then
-	Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-	Player = Players.LocalPlayer
 end
-
-getgenv().ServerHop = function()
-	local PlaceId = game.PlaceId
-	local JobId = game.JobId
-
-	local RootFolder = "ServerHop"
-	local StorageFile = `{RootFolder}/{tostring(PlaceId)}.json`
-	local Data = {
-		Start = tick(),
-		Jobs = {},
-	}
-
-	if not isfolder(RootFolder) then
-		makefolder(RootFolder)
+local function TPReturner(placeId, region)
+	local Site;
+	if foundAnything == "" then
+		Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&region=' .. region))
+	else
+		Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything .. '&region=' .. region))
 	end
-
-	if isfile(StorageFile) then
-		local NewData = HttpService:JSONDecode(readfile(StorageFile))
-
-		if tick() - NewData.Start < Config.MaxStore then
-			Data = NewData
-		end
+	local ID = ""
+	if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+		foundAnything = Site.nextPageCursor
 	end
-
-	if not table.find(Data.Jobs, JobId) then
-		table.insert(Data.Jobs, JobId)
-	end
-
-	writefile(StorageFile, HttpService:JSONEncode(Data))
-
-	local Servers = {}
-	local Cursor = ""
-
-	while Cursor and #Servers <= 0 and task.wait(Config.CheckInterval / 1000) do
-		local Request = request or HttpService.RequestAsync
-		local RequestSuccess, Response = pcall(Request, {
-			Url = `https://games.roblox.com/v1/games/{PlaceId}/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true&cursor{Cursor}`,
-			Method = "GET",
-		})
-
-		if not RequestSuccess then
-			continue
-		end
-
-		local DecodeSuccess, Body = pcall(HttpService.JSONDecode, HttpService, Response.Body)
-
-		if not DecodeSuccess or not Body or not Body.data then
-			continue
-		end
-
-		task.spawn(function()
-			for _, Server in pairs(Body.data) do
-				if
-					typeof(Server) ~= "table"
-					or not Server.id
-					or not tonumber(Server.playing)
-					or not tonumber(Server.maxPlayers)
-				then
-					continue
+	local num = 0;
+	for i,v in pairs(Site.data) do
+		local Possible = true
+		ID = tostring(v.id)
+		if tonumber(v.maxPlayers) > tonumber(v.playing) then
+			for _,Existing in pairs(AllIDs) do
+				if num ~= 0 then
+					if ID == tostring(Existing) then
+						Possible = false
+					end
+				else
+					if tonumber(actualHour) ~= tonumber(Existing) then
+						local delFile = pcall(function()
+							delfile("server-hop-temp.json")
+							AllIDs = {}
+							table.insert(AllIDs, actualHour)
+						end)
+					end
 				end
-
-				if Server.playing < Server.maxPlayers and not table.find(Data.Jobs, Server.id) then
-					table.insert(Servers, 1, Server.id)
-				end
+				num = num + 1
+			end
+			if Possible == true then
+				table.insert(AllIDs, ID)
+				wait()
+				pcall(function()
+					writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
+					wait()
+					S_T:TeleportToPlaceInstance(placeId, ID, game.Players.LocalPlayer)
+				end)
+				wait(4)
+			end
+		end
+	end
+end
+local module = {}
+function module:Teleport(placeId, region)
+	while wait() do
+		pcall(function()
+			TPReturner(placeId, region)
+			if foundAnything ~= "" then
+				TPReturner(placeId, region)
 			end
 		end)
-
-		if Body.nextPageCursor then
-			Cursor = Body.nextPageCursor
-		end
-	end
-
-	while #Servers > 0 and task.wait(Config.TeleportInterval / 1000) do
-		local Server = Servers[math.random(1, #Servers)]
-		TeleportService:TeleportToPlaceInstance(PlaceId, Server, Player)
 	end
 end
+return module
