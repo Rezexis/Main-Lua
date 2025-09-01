@@ -1,7 +1,6 @@
 local AllIDs = {}
 local foundAnything = ""
 local actualHour = os.date("!*t").hour
-local Deleted = false
 local S_T = game:GetService("TeleportService")
 local S_H = game:GetService("HttpService")
 
@@ -22,8 +21,8 @@ local function TPReturner(placeId, region)
 	else
 		Site = S_H:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. placeId .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything .. '&region=' .. region))
 	end
-	
-	if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+
+	if Site.nextPageCursor and Site.nextPageCursor ~= "null" then
 		foundAnything = Site.nextPageCursor
 	end
 
@@ -31,7 +30,8 @@ local function TPReturner(placeId, region)
 	for i, v in pairs(Site.data) do
 		local Possible = true
 		local ID = tostring(v.id)
-		if tonumber(v.playing) == 1 then
+
+		if tonumber(v.playing) == 1 and tonumber(v.maxPlayers) > 1 then
 			for _, Existing in pairs(AllIDs) do
 				if num ~= 0 then
 					if ID == tostring(Existing) then
@@ -39,7 +39,7 @@ local function TPReturner(placeId, region)
 					end
 				else
 					if tonumber(actualHour) ~= tonumber(Existing) then
-						local delFile = pcall(function()
+						pcall(function()
 							delfile("server-hop-temp.json")
 							AllIDs = {}
 							table.insert(AllIDs, actualHour)
@@ -51,13 +51,12 @@ local function TPReturner(placeId, region)
 
 			if Possible then
 				table.insert(AllIDs, ID)
-				wait()
 				pcall(function()
 					writefile("server-hop-temp.json", S_H:JSONEncode(AllIDs))
-					wait()
 					S_T:TeleportToPlaceInstance(placeId, ID, game.Players.LocalPlayer)
 				end)
 				wait(4)
+				break
 			end
 		end
 	end
